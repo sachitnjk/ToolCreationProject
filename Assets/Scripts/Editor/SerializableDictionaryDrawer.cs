@@ -17,7 +17,7 @@ public class SerializableDictionaryDrawer : PropertyDrawer
             return;
         }
 
-        // Expand the property if it's not collapsed
+        // expanding the property if it's not collapsed
         property.isExpanded = EditorGUI.Foldout(
             new Rect(position.x, position.y, position.width, EditorGUIUtility.singleLineHeight),
             property.isExpanded, label, true);
@@ -35,7 +35,7 @@ public class SerializableDictionaryDrawer : PropertyDrawer
         int dictSize = keysProperty.arraySize;
         float halfWidth = (position.width - 50) / 2;
 
-        // Draw key-value pairs
+        // drawing the key-value pairs
         for (int i = 0; i < dictSize; i++)
         {
             SerializedProperty keyProp = keysProperty.GetArrayElementAtIndex(i);
@@ -48,7 +48,7 @@ public class SerializableDictionaryDrawer : PropertyDrawer
             EditorGUI.PropertyField(keyRect, keyProp, GUIContent.none);
             EditorGUI.PropertyField(valueRect, valueProp, GUIContent.none);
 
-            // Remove entry button
+            // Remove entry button functionality
             if (GUI.Button(removeRect, "X"))
             {
                 keysProperty.DeleteArrayElementAtIndex(i);
@@ -60,7 +60,7 @@ public class SerializableDictionaryDrawer : PropertyDrawer
             }
         }
 
-        // Add Entry Button
+        // Add Entry Button fucntionality
         Rect buttonRect = new Rect(fieldRect.x, fieldRect.y + (dictSize * lineHeight), position.width, EditorGUIUtility.singleLineHeight);
         if (GUI.Button(buttonRect, "Add Entry"))
         {
@@ -68,14 +68,14 @@ public class SerializableDictionaryDrawer : PropertyDrawer
             keysProperty.arraySize++;
             valuesProperty.arraySize++;
 
-            // Apply property modifications before updating
+            // applying property modifications before updating because unity stoopid
             property.serializedObject.ApplyModifiedProperties();
 
-            // Re-fetch keys and values after increasing array size
+            // refetching keys and values right after increasing array size 
             keysProperty = property.FindPropertyRelative("keys");
             valuesProperty = property.FindPropertyRelative("values");
 
-            // Ensure that the new entry is initialized
+            // ensuring new entry is initialized
             int newIndex = keysProperty.arraySize - 1;
             SerializedProperty newKeyProp = keysProperty.GetArrayElementAtIndex(newIndex);
             SerializedProperty newValueProp = valuesProperty.GetArrayElementAtIndex(newIndex);
@@ -86,13 +86,13 @@ public class SerializableDictionaryDrawer : PropertyDrawer
                 return;
             }
 
-            newKeyProp.stringValue = "NewKey" + newIndex; // Default key
-            newValueProp.intValue = 0;                    // Default value
+            newKeyProp.stringValue = "NewKey" + newIndex;
+            newValueProp.intValue = 0;
 
-            // Re-apply and update
+            //reapplying and updating
             property.serializedObject.ApplyModifiedProperties();
             property.serializedObject.Update();
-            SceneView.RepaintAll();  // Refresh the inspector to reflect the changes
+            SceneView.RepaintAll();  // refreshing inspector to properly apply changes...ahh unity ._.
 
             GUI.FocusControl(null);
         }
@@ -107,4 +107,6 @@ public class SerializableDictionaryDrawer : PropertyDrawer
         SerializedProperty keysProperty = property.FindPropertyRelative("keys");
         return EditorGUIUtility.singleLineHeight * (keysProperty.arraySize + 2);
     }
+    
+    //conclusion of my first proper official tool I guess
 }
