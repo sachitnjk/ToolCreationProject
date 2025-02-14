@@ -1,6 +1,15 @@
+using System;
 using UnityEngine;
 
 public class RandomScript : MonoBehaviour
 {
-    public SerializableDictionary<string, int> stringIntDictionary;
+    public StringIntDictionary stringIntDictionary;
+
+    public void OnValidate()
+    {
+        Debug.Log("Chungus cat");
+    }
 }
+
+[Serializable]
+public class StringIntDictionary : SerializableDictionary<string, int> {}
