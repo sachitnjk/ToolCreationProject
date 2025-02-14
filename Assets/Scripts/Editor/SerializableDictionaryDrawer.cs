@@ -84,14 +84,13 @@ public class SerializableDictionaryDrawer : PropertyDrawer
                 Debug.LogError("Failed to retrieve new array elements! SerializedProperty may not have updated correctly.");
                 return;
             }
-
-            // Set default values based on the type of the key and value
+            
             SetDefaultValues(newKeyProp, newValueProp, newIndex);
 
-            // Reapply changes and refresh the inspector
+            // Forcing Unity inspector refresh
             property.serializedObject.ApplyModifiedProperties();
             property.serializedObject.Update();
-            SceneView.RepaintAll(); // Refreshing the inspector to properly display the new entry
+            SceneView.RepaintAll(); // Inspector force repaint
 
             GUI.FocusControl(null);
         }
@@ -102,40 +101,41 @@ public class SerializableDictionaryDrawer : PropertyDrawer
 
     private void SetDefaultValues(SerializedProperty keyProp, SerializedProperty valueProp, int index)
     {
-        // Geting the type of key and value from the dictionary
-        Type keyType = keyProp.propertyType == SerializedPropertyType.String ? typeof(string) : typeof(object);
-        Type valueType = valueProp.propertyType == SerializedPropertyType.Integer ? typeof(int) : typeof(object);
+        // Using the property type to figure out the right defaults
+        if (keyProp.propertyType == SerializedPropertyType.String)
+        {
+            keyProp.stringValue = "NewKey" + index;
+        }
+        else if (keyProp.propertyType == SerializedPropertyType.Integer)
+        {
+            keyProp.intValue = index;
+        }
+        else if (keyProp.propertyType == SerializedPropertyType.Float)
+        {
+            keyProp.floatValue = 0.0f;
+        }
 
-        if (keyType == typeof(string))
+        // Default value handling for value types
+        if (valueProp.propertyType == SerializedPropertyType.Integer)
         {
-            keyProp.stringValue = "NewKey" + index;  // Default key name
+            valueProp.intValue = 0;
         }
-        else if (keyType == typeof(int))
+        else if (valueProp.propertyType == SerializedPropertyType.Float)
         {
-            keyProp.intValue = index;  // Default key value
+            valueProp.floatValue = 0.0f;
         }
-
-        // Seting default based on value type
-        if (valueType == typeof(int))
+        else if (valueProp.propertyType == SerializedPropertyType.String)
         {
-            valueProp.intValue = 0;  // Default int value
+            valueProp.stringValue = "NewValue" + index;
         }
-        else if (valueType == typeof(float))
+        else if (valueProp.propertyType == SerializedPropertyType.Boolean)
         {
-            valueProp.floatValue = 0.0f;  // Default float value
-        }
-        else if (valueType == typeof(string))
-        {
-            valueProp.stringValue = "DefaultValue";  // Default string value
-        }
-        else if (valueType == typeof(bool))
-        {
-            valueProp.boolValue = false;  // Default bool value
+            valueProp.boolValue = false;
         }
         else
         {
-            // If it's a custom type, maybe I add something to handle that here
-            // valueProp.objectReferenceValue = null; 
+            // Handling reference types or custom objects (null by default for now)
+            valueProp.objectReferenceValue = null;
         }
     }
 
