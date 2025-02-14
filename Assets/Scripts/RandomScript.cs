@@ -4,6 +4,7 @@ using UnityEngine;
 public class RandomScript : MonoBehaviour
 {
     public StringIntDictionary stringIntDictionary;
+    // public SerializableDictionary<float, bool> intIntDictionary;
 
     public void OnValidate()
     {
@@ -12,4 +13,7 @@ public class RandomScript : MonoBehaviour
 }
 
 [Serializable]
-public class StringIntDictionary : SerializableDictionary<string, int> {}
+public class StringIntDictionary : SerializableDictionary<string, string> {}
+
+// [Serializable]
+// public class IntIntDictionary : SerializableDictionary<int, int> {}

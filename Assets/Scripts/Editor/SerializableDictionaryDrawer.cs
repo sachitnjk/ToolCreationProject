@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEditor;
+using System;
 
 [CustomPropertyDrawer(typeof(SerializableDictionary<,>), true)]
 public class SerializableDictionaryDrawer : PropertyDrawer
@@ -17,7 +18,7 @@ public class SerializableDictionaryDrawer : PropertyDrawer
             return;
         }
 
-        // expanding the property if it's not collapsed
+        // Foldout to toggle dictionary visibility
         property.isExpanded = EditorGUI.Foldout(
             new Rect(position.x, position.y, position.width, EditorGUIUtility.singleLineHeight),
             property.isExpanded, label, true);
@@ -35,7 +36,7 @@ public class SerializableDictionaryDrawer : PropertyDrawer
         int dictSize = keysProperty.arraySize;
         float halfWidth = (position.width - 50) / 2;
 
-        // drawing the key-value pairs
+        // Draw key-value pairs
         for (int i = 0; i < dictSize; i++)
         {
             SerializedProperty keyProp = keysProperty.GetArrayElementAtIndex(i);
@@ -48,7 +49,6 @@ public class SerializableDictionaryDrawer : PropertyDrawer
             EditorGUI.PropertyField(keyRect, keyProp, GUIContent.none);
             EditorGUI.PropertyField(valueRect, valueProp, GUIContent.none);
 
-            // Remove entry button functionality
             if (GUI.Button(removeRect, "X"))
             {
                 keysProperty.DeleteArrayElementAtIndex(i);
@@ -60,7 +60,7 @@ public class SerializableDictionaryDrawer : PropertyDrawer
             }
         }
 
-        // Add Entry Button fucntionality
+        // Add Entry Button functionality
         Rect buttonRect = new Rect(fieldRect.x, fieldRect.y + (dictSize * lineHeight), position.width, EditorGUIUtility.singleLineHeight);
         if (GUI.Button(buttonRect, "Add Entry"))
         {
@@ -68,14 +68,13 @@ public class SerializableDictionaryDrawer : PropertyDrawer
             keysProperty.arraySize++;
             valuesProperty.arraySize++;
 
-            // applying property modifications before updating because unity stoopid
+            // Apply property modifications before updating because Unity can be a little slow with updates
             property.serializedObject.ApplyModifiedProperties();
 
-            // refetching keys and values right after increasing array size 
+            // Refetch the updated properties after increasing the array size
             keysProperty = property.FindPropertyRelative("keys");
             valuesProperty = property.FindPropertyRelative("values");
 
-            // ensuring new entry is initialized
             int newIndex = keysProperty.arraySize - 1;
             SerializedProperty newKeyProp = keysProperty.GetArrayElementAtIndex(newIndex);
             SerializedProperty newValueProp = valuesProperty.GetArrayElementAtIndex(newIndex);
@@ -86,13 +85,13 @@ public class SerializableDictionaryDrawer : PropertyDrawer
                 return;
             }
 
-            newKeyProp.stringValue = "NewKey" + newIndex;
-            newValueProp.intValue = 0;
+            // Set default values based on the type of the key and value
+            SetDefaultValues(newKeyProp, newValueProp, newIndex);
 
-            //reapplying and updating
+            // Reapply changes and refresh the inspector
             property.serializedObject.ApplyModifiedProperties();
             property.serializedObject.Update();
-            SceneView.RepaintAll();  // refreshing inspector to properly apply changes...ahh unity ._.
+            SceneView.RepaintAll(); // Refreshing the inspector to properly display the new entry
 
             GUI.FocusControl(null);
         }
@@ -101,12 +100,49 @@ public class SerializableDictionaryDrawer : PropertyDrawer
         EditorGUI.EndProperty();
     }
 
+    private void SetDefaultValues(SerializedProperty keyProp, SerializedProperty valueProp, int index)
+    {
+        // Geting the type of key and value from the dictionary
+        Type keyType = keyProp.propertyType == SerializedPropertyType.String ? typeof(string) : typeof(object);
+        Type valueType = valueProp.propertyType == SerializedPropertyType.Integer ? typeof(int) : typeof(object);
+
+        if (keyType == typeof(string))
+        {
+            keyProp.stringValue = "NewKey" + index;  // Default key name
+        }
+        else if (keyType == typeof(int))
+        {
+            keyProp.intValue = index;  // Default key value
+        }
+
+        // Seting default based on value type
+        if (valueType == typeof(int))
+        {
+            valueProp.intValue = 0;  // Default int value
+        }
+        else if (valueType == typeof(float))
+        {
+            valueProp.floatValue = 0.0f;  // Default float value
+        }
+        else if (valueType == typeof(string))
+        {
+            valueProp.stringValue = "DefaultValue";  // Default string value
+        }
+        else if (valueType == typeof(bool))
+        {
+            valueProp.boolValue = false;  // Default bool value
+        }
+        else
+        {
+            // If it's a custom type, maybe I add something to handle that here
+            // valueProp.objectReferenceValue = null; 
+        }
+    }
+
     public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
     {
         if (!property.isExpanded) return EditorGUIUtility.singleLineHeight;
         SerializedProperty keysProperty = property.FindPropertyRelative("keys");
         return EditorGUIUtility.singleLineHeight * (keysProperty.arraySize + 2);
     }
-    
-    //conclusion of my first proper official tool I guess
 }
